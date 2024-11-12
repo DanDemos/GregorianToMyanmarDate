@@ -1,5 +1,16 @@
+import { useEffect, useState } from 'react';
 import './App.css';
 import { getMyanmarDate } from "mm-cal-js";
+import DatePicker from 'react-datepicker';
+import "react-datepicker/dist/react-datepicker.css";
+
+function formatDate(date) {
+  const day = String(date.getDate()).padStart(2, '0'); // Get the day and pad with leading zero if needed
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based, so add 1
+  const year = date.getFullYear(); // Get the full year
+
+  return `${day}-${month}-${year}`; // Format as DD-MM-YYYY
+}
 
 let months = [
   "LeapWaso",
@@ -28,7 +39,7 @@ function GregorianToMyanmar(gregorianDate) {
   if (!myanmarDate) throw new Error("Invalid date conversion.");
 
   // Extract Myanmar day, month and year
-  const myanmarDay = myanmarDate.monthDay-15;
+  const myanmarDay = myanmarDate.monthDay > 15 ? myanmarDate.monthDay - 15 : myanmarDate.monthDay;
   const myanmarMonth = myanmarDate.month;
   const myanmarYear = myanmarDate.myanmarYear
 
@@ -38,27 +49,32 @@ function GregorianToMyanmar(gregorianDate) {
   // Determine lunar phase using monthType from myanmarDate
   // [0=Hnaung, 1=Oo]
   let phase;
-  if (myanmarDate?.monthType  == 0) {
+  if (myanmarDate?.monthType == 0) {
     phase = 'Waxing';
-  } else if (myanmarDate?.monthType  == 1) {
+  } else if (myanmarDate?.monthType == 1) {
     phase = 'Waning';
   }
 
   // Format the myanmar date as Lunar Phase, Day, Myanmar MonthName, Myanmar Year
-  return `${phase} ${myanmarDay} ${myanmarMonthName}, ${myanmarYear}`;
+  return `${phase}-${myanmarDay}, ${myanmarMonthName}, ${myanmarYear}`;
 }
 
 function App() {
+  const [gregorianDate, setGregorianDate] = useState(new Date());
+  const [myanmarDate, setMyanmarDate] = useState("");
 
-  // Example usage:
-  const gregorianDate = "31-3-1975";
-  const myanmarEquivalent = GregorianToMyanmar(gregorianDate);
+  useEffect(() => {
+    console.log(gregorianDate, "gregorianDate.replace('-')")
+    let mmDate = GregorianToMyanmar(formatDate(gregorianDate));
+    setMyanmarDate(mmDate)
+  }, [gregorianDate])
+
 
   return (
     <div className="App">
-      gregorianDate: {gregorianDate}
+      myanmarEquivalent: {myanmarDate}
       <br />
-      myanmarEquivalent: {myanmarEquivalent}
+      gregorianDate:  <DatePicker selected={gregorianDate} onChange={(date) => setGregorianDate(date)} />
       <br />
     </div>
   );
